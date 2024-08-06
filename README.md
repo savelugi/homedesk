@@ -1,5 +1,8 @@
 # Motor Control with Wemos D1 Mini
 
+## Demonstration
+
+![Demonstration GIF](media/gif.gif)]
 This project is designed to control a motor using the Wemos D1 Mini, with buttons to move the motor forward and backward. The setup is designed to be fault-tolerant, preventing the motor from running indefinitely.
 
 ## Features
