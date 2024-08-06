@@ -15,6 +15,7 @@ This project is designed to control a motor using the Wemos D1 Mini, with button
 - Wemos D1 Mini (ESP-8266)
 - Two buttons: TACTS-12x12x7.3
 - Motor: 36GP-555 High Torque Low Noise DC 12V 24V Planetary Gear Motor
+- Flexible Coupler 6x7 mm
 - H bridge for motor driving: BTS7960 DC 43A Stepper Motor Driver Module
 - Power supply for the motor and ESP-8266: 100W 24V Switching power supply
 - Step-down DC-DC converter for ESP-8266: LM2596 Buck Converter
