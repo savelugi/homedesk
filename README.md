@@ -1,9 +1,13 @@
 # Motor Control with Wemos D1 Mini
 
-## Demonstration
+<div style="display: flex; align-items: center;">
+   <img src="media/gif.gif" alt="Rotating shaft" width="300"/>
+   <img src="media/picture.jpg" alt="3D printed case" width="300" style="margin-right: 10px;"/>
+   
+</div>
 
-![Wiring Diagram](media/picture.jpg)
-![Demonstration GIF](media/gif.gif)]
+This project is designed to control a motor using the Wemos D1 Mini, with buttons to move the motor forward and backward. The setup is designed to be fault-tolerant, preventing the motor from running indefinitely.
+
 
 This project is designed to control a motor using the Wemos D1 Mini, with buttons to move the motor forward and backward. The setup is designed to be fault-tolerant, preventing the motor from running indefinitely.
 
