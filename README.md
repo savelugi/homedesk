@@ -9,7 +9,8 @@
 This project is designed to control a motor using the Wemos D1 Mini, with buttons to move the motor forward and backward. The setup is designed to be fault-tolerant, preventing the motor from running indefinitely.
 
 ## Features
-
+- **OTA Updates:** The firmware can be updated through a wifi connection
+- **Telnet debugging:** There is a telnet server running on the ESP which prints the button states
 - **Button Control:** Two buttons control the motor's direction (forward and backward).
 - **PWM Speed Control:** Motor speed is controlled using PWM, increasing speed the longer a button is held.
 - **Safety Timeout:** The motor will stop automatically if it runs for more than 30 seconds continuously.
