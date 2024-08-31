@@ -1,4 +1,14 @@
 #include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+
+const char* ssid = ""; 
+const char* password = "";
+
+WiFiServer telnetServer(23);
+WiFiClient telnetClient;
 
 // Define pin numbers for the Wemos D1 Mini
 const int buttonPin1 = D1;  // GPIO5
@@ -23,7 +33,54 @@ const unsigned long maxPressTime = 1000;   // 1 second to reach max speed
 const unsigned long maxRunTime = 20000;    // 20 seconds maximum run time
 
 void setup() {
-  Serial.begin(9600);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    digitalWrite(ledPin, !digitalRead(ledPin));  
+  }
+  digitalWrite(ledPin, HIGH);
+
+  // Telnet szerver indítása
+  telnetServer.begin();
+  telnetServer.setNoDelay(true);
+
+  // OTA inicializálás
+  ArduinoOTA.onStart([]() {
+    if (telnetClient && telnetClient.connected()) {
+      telnetClient.println("Start updating...");
+    }
+  });
+
+  ArduinoOTA.onEnd([]() {
+    if (telnetClient && telnetClient.connected()) {
+      telnetClient.println("\nUpdate complete!");
+    }
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    if (telnetClient && telnetClient.connected()) {
+      telnetClient.printf("Progress: %u%%\r", (progress / (total / 100)));
+    }
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    if (telnetClient && telnetClient.connected()) {
+      telnetClient.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+        telnetClient.println("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+        telnetClient.println("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+        telnetClient.println("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+        telnetClient.println("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+        telnetClient.println("End Failed");
+      }
+    }
+  });
+
+  ArduinoOTA.begin();
 
   // Initialize button pins as input
   pinMode(buttonPin1, INPUT);
@@ -45,6 +102,18 @@ void setup() {
 }
 
 void loop() {
+  // Handle OTA updates
+  ArduinoOTA.handle();
+
+  // Check for new Telnet clients
+  if (telnetServer.hasClient()) {
+    if (!telnetClient || !telnetClient.connected()) {
+      if (telnetClient) telnetClient.stop();
+      telnetClient = telnetServer.available();
+      telnetClient.println("New Telnet client connected");
+    }
+  }
+
   // Read button states
   buttonState1 = digitalRead(buttonPin1);
   buttonState2 = digitalRead(buttonPin2);
@@ -73,14 +142,18 @@ void loop() {
 
       digitalWrite(ledPin, HIGH);  // Turn on status LED
 
-      Serial.print("Motor running forward at speed: ");
-      Serial.println(speed);
+      if (telnetClient && telnetClient.connected()) {
+        telnetClient.print("Motor running forward at speed: ");
+        telnetClient.println(speed);
+      }
     } else {
       // Stop the motor if run duration exceeds max run time
       digitalWrite(r_en, LOW);
       digitalWrite(l_en, LOW);
 
-      Serial.println("Error: Motor stopped due to exceeding max run time");
+      if (telnetClient && telnetClient.connected()) {
+        telnetClient.println("Error: Motor stopped due to exceeding max run time");
+      }
     }
   } else if (buttonState2 == HIGH) {
     if (buttonPressTime2 == 0) {
@@ -104,14 +177,18 @@ void loop() {
 
       digitalWrite(ledPin, HIGH);  // Turn on status LED
 
-      Serial.print("Motor running backward at speed: ");
-      Serial.println(speed);
+      if (telnetClient && telnetClient.connected()) {
+        telnetClient.print("Motor running backward at speed: ");
+        telnetClient.println(speed);
+      }
     } else {
       // Stop the motor if run duration exceeds max run time
       digitalWrite(r_en, LOW);
       digitalWrite(l_en, LOW);
 
-      Serial.println("Error: Motor stopped due to exceeding max run time");
+      if (telnetClient && telnetClient.connected()) {
+        telnetClient.println("Error: Motor stopped due to exceeding max run time");
+      }
     }
   } else {
     // Reset the button press times
@@ -125,7 +202,9 @@ void loop() {
     digitalWrite(l_en, LOW);
     digitalWrite(ledPin, LOW);  // Turn off status LED
 
-    Serial.println("Motor stopped");
+    if (telnetClient && telnetClient.connected()) {
+      telnetClient.println("Motor stopped");
+    }
   }
 
   // Add a small delay to avoid button bouncing issues
